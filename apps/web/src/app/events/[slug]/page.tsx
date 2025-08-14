@@ -1,8 +1,10 @@
-import { defineQuery, PortableText } from "next-sanity";
+import {defineQuery, PortableText} from "next-sanity";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import {notFound} from "next/navigation";
+import Image from "next/image";
+import {urlFor} from "@/sanity/image";
 
-import { sanityFetch } from "@/sanity/live";
+import {sanityFetch} from "@/sanity/live";
 
 const EVENT_QUERY = defineQuery(`*[
     _type == "event" &&
@@ -20,7 +22,7 @@ export default async function EventPage({
                                         }: {
     params: Promise<{ slug: string }>;
 }) {
-    const { data: event } = await sanityFetch({
+    const {data: event} = await sanityFetch({
         query: EVENT_QUERY,
         params: await params,
     });
@@ -44,7 +46,14 @@ export default async function EventPage({
         new Date(date).getTime() - doorsOpen * 60000
     ).toLocaleTimeString();
 
-    const imageUrl = "https://placehold.co/550x310/png";
+    const imageUrl = headline?.photo
+        ? urlFor(headline.photo)
+            .height(310)
+            .width(550)
+            .quality(80)
+            .auto('format')
+            .url()
+        : 'https://placehold.co/550x310/png';
 
     return (
         <main className="container mx-auto grid gap-12 p-12">
@@ -57,7 +66,7 @@ export default async function EventPage({
                 </Link>
             </div>
             <div className="grid items-top gap-12 sm:grid-cols-2">
-                <img
+                <Image
                     src={imageUrl}
                     alt={name || "Event"}
                     className="mx-auto aspect-video overflow-hidden rounded-xl object-cover object-center sm:w-full"
@@ -67,7 +76,8 @@ export default async function EventPage({
                 <div className="flex flex-col justify-center space-y-4">
                     <div className="space-y-4">
                         {eventType ? (
-                            <div className="inline-block rounded-lg bg-gray-100 dark:bg-gray-800 px-3 py-1 text-sm text-gray-700 dark:text-gray-300 capitalize">
+                            <div
+                                className="inline-block rounded-lg bg-gray-100 dark:bg-gray-800 px-3 py-1 text-sm text-gray-700 dark:text-gray-300 capitalize">
                                 {eventType.replace("-", " ")}
                             </div>
                         ) : null}
@@ -119,7 +129,7 @@ export default async function EventPage({
                     </div>
                     {details && details.length > 0 && (
                         <div className="prose max-w-none prose-gray dark:prose-invert">
-                            <PortableText value={details} />
+                            <PortableText value={details}/>
                         </div>
                     )}
                     {tickets && (
